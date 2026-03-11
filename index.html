@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industrial Product Taxonomy</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --panel: #0f1628;
+    --border: #1e2d4a;
+    --accent1: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #00ff9d;
+    --accent4: #ffcc00;
+    --accent5: #bf5fff;
+    --accent6: #ff3b6b;
+    --text: #c8d8f0;
+    --text-dim: #5a7399;
+    --glow: rgba(0,212,255,0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(0,212,255,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(191,95,255,0.05) 0%, transparent 50%);
+  }
+
+  header {
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0;
+    width: 300px; height: 1px;
+    background: linear-gradient(90deg, var(--accent1), transparent);
+  }
+
+  .logo-box {
+    width: 44px; height: 44px;
+    border: 1px solid var(--accent1);
+    display: grid;
+    place-items: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent1);
+    letter-spacing: 1px;
+    box-shadow: 0 0 20px rgba(0,212,255,0.3), inset 0 0 10px rgba(0,212,255,0.05);
+  }
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent1);
+    letter-spacing: 2px;
+    margin-top: 3px;
+  }
+
+  .controls {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 7px 18px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn:hover {
+    border-color: var(--accent1);
+    color: var(--accent1);
+    box-shadow: 0 0 12px rgba(0,212,255,0.2);
+  }
+
+  .tree-container {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* ROOT */
+  .root-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding-left: 2px;
+  }
+
+  /* MAIN GROUP */
+  .main-group {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    overflow: hidden;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+
+  .main-group::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--group-color, var(--accent1));
+  }
+
+  .main-group-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px 14px 24px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+    position: relative;
+  }
+
+  .main-group-header:hover {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .group-icon {
+    width: 32px; height: 32px;
+    border: 1px solid var(--group-color, var(--accent1));
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px color-mix(in srgb, var(--group-color, var(--accent1)) 30%, transparent);
+  }
+
+  .group-name {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #fff;
+    flex: 1;
+  }
+
+  .group-count {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--group-color, var(--accent1));
+    letter-spacing: 1px;
+  }
+
+  .toggle-arrow {
+    font-size: 10px;
+    color: var(--text-dim);
+    transition: transform 0.25s;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .main-group.open .toggle-arrow { transform: rotate(90deg); }
+
+  /* SUBCATEGORIES */
+  .subcategories {
+    display: none;
+    padding: 0 20px 16px 36px;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+    gap: 10px;
+  }
+
+  .main-group.open .subcategories { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 20px 16px 36px; }
+
+  /* SUBCATEGORY */
+  .subcat {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    overflow: hidden;
+    flex: 1 1 280px;
+    min-width: 240px;
+  }
+
+  .subcat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 2px solid var(--group-color, var(--accent1));
+  }
+
+  .subcat-header:hover { background: rgba(255,255,255,0.03); }
+
+  .subcat-name {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .subcat-count {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .sub-arrow {
+    font-size: 9px;
+    color: var(--text-dim);
+    transition: transform 0.2s;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .subcat.open .sub-arrow { transform: rotate(90deg); }
+
+  /* ITEMS */
+  .items-list {
+    display: none;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,0.15);
+  }
+
+  .subcat.open .items-list { display: flex; }
+
+  .item {
+    padding: 7px 14px 7px 22px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.15s, background 0.15s;
+  }
+
+  .item:last-child { border-bottom: none; }
+
+  .item:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .item::before {
+    content: '▸';
+    font-size: 8px;
+    color: var(--group-color, var(--accent1));
+    opacity: 0.6;
+  }
+
+  /* scan line effect */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    padding: 12px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-wrap: wrap;
+  }
+
+  .stat { display: flex; gap: 8px; align-items: center; }
+  .stat-val { color: var(--accent3); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-box">IND</div>
+  <div>
+    <h1>Industrial Product Taxonomy</h1>
+    <div class="subtitle">// PRODUCT CLASSIFICATION SYSTEM — TREE VIEW</div>
+  </div>
+  <div class="controls">
+    <button class="btn" onclick="expandAll()">Expand All</button>
+    <button class="btn" onclick="collapseAll()">Collapse All</button>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat">MAIN GROUPS <span class="stat-val">07</span></div>
+  <div class="stat">SUBCATEGORIES <span class="stat-val">24</span></div>
+  <div class="stat">TOTAL PRODUCTS <span class="stat-val">90</span></div>
+  <div class="stat">STANDARD <span class="stat-val">ISO / IEC / NEMA</span></div>
+</div>
+
+<div class="tree-container">
+  <div class="root-label">▸ ROOT / INDUSTRIAL AUTOMATION & MOTION CONTROL</div>
+
+  <!-- GROUP 1: MOTION & DRIVE SYSTEMS -->
+  <div class="main-group" style="--group-color: #00d4ff;">
+    <div class="main-group-header" onclick="toggleGroup(this)">
+      <div class="group-icon">⚡</div>
+      <div class="group-name">Motion & Drive Systems</div>
+      <div class="group-count">22 PRODUCTS</div>
+      <div class="toggle-arrow">▶</div>
+    </div>
+    <div class="subcategories">
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">AC Drives & Motors</div>
+          <div class="subcat-count">5</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">AC Drives</div>
+          <div class="item">AC Induction Motors</div>
+          <div class="item">AC Gearmotors</div>
+          <div class="item">Vector Motors</div>
+          <div class="item">Speed Change Drives</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">DC Drives & Motors</div>
+          <div class="subcat-count">2</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">DC Drives</div>
+          <div class="item">DC Motors</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Servo Systems</div>
+          <div class="subcat-count">2</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Servo Drives</div>
+          <div class="item">Servo Motors</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Stepper Systems</div>
+          <div class="subcat-count">2</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Stepper Drives</div>
+          <div class="item">Stepper Motors</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Advanced Motors</div>
+          <div class="subcat-count">3</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Linear Motors</div>
+          <div class="item">Smart Motors</div>
+          <div class="item">Gearmotors</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GROUP 2: POWER TRANSMISSION -->
+  <div class="main-group" style="--group-color: #ff6b35;">
+    <div class="main-group-header" onclick="toggleGroup(this)">
+      <div class="group-icon">⚙</div>
+      <div class="group-name">Power Transmission</div>
+      <div class="group-count">16 PRODUCTS</div>
+      <div class="toggle-arrow">▶</div>
+    </div>
+    <div class="subcategories">
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Gearheads & Gearing</div>
+          <div class="subcat-count">4</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Planetary Gearheads</div>
+          <div class="item">Cycloidal Gearheads</div>
+          <div class="item">Worm Gears</div>
+          <div class="item">Rack & Pinions</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Belt & Pulley Systems</div>
+          <div class="subcat-count">3</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Belt Drives</div>
+          <div class="item">Timing Belts</div>
+          <div class="item">Pulleys</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Couplings & Clutches</div>
+          <div class="subcat-count">4</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Couplings</div>
+          <div class="item">Clutches</div>
+          <div class="item">Brakes</div>
+          <div class="item">Torque Tubes</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Shaft & Spindle</div>
+          <div class="subcat-count">5</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Spindles</div>
+          <div class="item">Line Shafts</div>
+          <div class="item">Shrink Discs</div>
+          <div class="item">Locking Rings</div>
+          <div class="item">Screw Jacks</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GROUP 3: LINEAR MOTION -->
+  <div class="main-group" style="--group-color: #00ff9d;">
+    <div class="main-group-header" onclick="toggleGroup(this)">
+      <div class="group-icon">⟶</div>
+      <div class="group-name">Linear Motion</div>
+      <div class="group-count">16 PRODUCTS</div>
+      <div class="toggle-arrow">▶</div>
+    </div>
+    <div class="subcategories">
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Screws & Actuators</div>
+          <div class="subcat-count">5</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Ball Screws</div>
+          <div class="item">Lead Screws</div>
+          <div class="item">Acme Screws</div>
+          <div class="item">Linear Actuators</div>
+          <div class="item">Actuators</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Bearings & Guides</div>
+          <div class="subcat-count">4</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Linear Bearings</div>
+          <div class="item">Linear Bushings</div>
+          <div class="item">Air Bearings</div>
+          <div class="item">Vee Guides</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Positioning & Stages</div>
+          <div class="subcat-count">5</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Linear Positioning Stages</div>
+          <div class="item">Positioning Tables</div>
+          <div class="item">Gantry Systems</div>
+          <div class="item">Hand-Driven Linears</div>
+          <div class="item">Manual Linear Units</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Shafting & Units</div>
+          <div class="subcat-count">2</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Linear Shafting</div>
+          <div class="item">Tubular Linear Units</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GROUP 4: MEASUREMENT & METROLOGY -->
+  <div class="main-group" style="--group-color: #ffcc00;">
+    <div class="main-group-header" onclick="toggleGroup(this)">
+      <div class="group-icon">◎</div>
+      <div class="group-name">Measurement & Metrology</div>
+      <div class="group-count">14 PRODUCTS</div>
+      <div class="toggle-arrow">▶</div>
+    </div>
+    <div class="subcategories">
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Gages & Calipers</div>
+          <div class="subcat-count">4</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Gages</div>
+          <div class="item">Digital Gages</div>
+          <div class="item">Calipers</div>
+          <div class="item">Height Gages</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Testers & Analyzers</div>
+          <div class="subcat-count">3</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Hardness Testers</div>
+          <div class="item">Roundness Testers</div>
+          <div class="item">Surface Testers</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Scales & Readouts</div>
+          <div class="subcat-count">3</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Linear Scales</div>
+          <div class="item">Linear Scales | DROs</div>
+          <div class="item">Digital Readouts</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Laser & Optical</div>
+          <div class="subcat-count">2</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Laser Measurement</div>
+          <div class="item">Laser Sensors</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GROUP 5: AUTOMATION & CONTROLS -->
+  <div class="main-group" style="--group-color: #bf5fff;">
+    <div class="main-group-header" onclick="toggleGroup(this)">
+      <div class="group-icon">▣</div>
+      <div class="group-name">Automation & Controls</div>
+      <div class="group-count">14 PRODUCTS</div>
+      <div class="toggle-arrow">▶</div>
+    </div>
+    <div class="subcategories">
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Controllers & PLCs</div>
+          <div class="subcat-count">3</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">PLCs</div>
+          <div class="item">Motion Controllers</div>
+          <div class="item">Data Collection Software</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">HMI & Interfaces</div>
+          <div class="subcat-count">3</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">HMIs</div>
+          <div class="item">Operator Interfaces</div>
+          <div class="item">Factory Displays</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Feedback & Encoders</div>
+          <div class="subcat-count">5</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Encoders</div>
+          <div class="item">Linear Encoders</div>
+          <div class="item">Miniature Encoders</div>
+          <div class="item">Resolvers</div>
+          <div class="item">LVDTs</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Sensors & Vision</div>
+          <div class="subcat-count">3</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Sensors</div>
+          <div class="item">Vision</div>
+          <div class="item">Limit Switches</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GROUP 6: ELECTRICAL & POWER -->
+  <div class="main-group" style="--group-color: #ff3b6b;">
+    <div class="main-group-header" onclick="toggleGroup(this)">
+      <div class="group-icon">⚡</div>
+      <div class="group-name">Electrical & Power</div>
+      <div class="group-count">10 PRODUCTS</div>
+      <div class="toggle-arrow">▶</div>
+    </div>
+    <div class="subcategories">
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Power Components</div>
+          <div class="subcat-count">4</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Power Supplies</div>
+          <div class="item">Circuit Breakers</div>
+          <div class="item">Resistors</div>
+          <div class="item">Linear Amplifiers</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Cables & Connectivity</div>
+          <div class="subcat-count">4</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Cable Management</div>
+          <div class="item">Custom Cable Assemblies</div>
+          <div class="item">Flex Cables</div>
+          <div class="item">Robotic Flat Cables</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Enclosures & Panels</div>
+          <div class="subcat-count">3</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Enclosures</div>
+          <div class="item">Panel Components</div>
+          <div class="item">Communication Ports</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GROUP 7: STRUCTURAL & MECHANICAL -->
+  <div class="main-group" style="--group-color: #7ec8e3;">
+    <div class="main-group-header" onclick="toggleGroup(this)">
+      <div class="group-icon">⬡</div>
+      <div class="group-name">Structural & Mechanical</div>
+      <div class="group-count">16 PRODUCTS</div>
+      <div class="toggle-arrow">▶</div>
+    </div>
+    <div class="subcategories">
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Framing & Structure</div>
+          <div class="subcat-count">4</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Aluminum Framing</div>
+          <div class="item">Structural Aluminum</div>
+          <div class="item">Machine Bases</div>
+          <div class="item">Machine Mounts</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Railing & Stair Systems</div>
+          <div class="subcat-count">4</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Railing Systems</div>
+          <div class="item">Modular Railing Assemblies</div>
+          <div class="item">Stair Systems</div>
+          <div class="item">Modular Stair Assemblies</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Clamping & Fastening</div>
+          <div class="subcat-count">3</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Clamping Systems</div>
+          <div class="item">Tubular Clamps</div>
+          <div class="item">Lifting Devices</div>
+        </div>
+      </div>
+
+      <div class="subcat">
+        <div class="subcat-header" onclick="toggleSub(this)">
+          <div class="subcat-name">Maintenance & Support</div>
+          <div class="subcat-count">3</div>
+          <div class="sub-arrow">▶</div>
+        </div>
+        <div class="items-list">
+          <div class="item">Lubricants</div>
+          <div class="item">Rotary Tables</div>
+          <div class="item">Switches</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleGroup(header) {
+    const group = header.parentElement;
+    group.classList.toggle('open');
+  }
+
+  function toggleSub(header) {
+    const sub = header.parentElement;
+    sub.classList.toggle('open');
+  }
+
+  function expandAll() {
+    document.querySelectorAll('.main-group').forEach(g => g.classList.add('open'));
+    document.querySelectorAll('.subcat').forEach(s => s.classList.add('open'));
+  }
+
+  function collapseAll() {
+    document.querySelectorAll('.main-group').forEach(g => g.classList.remove('open'));
+    document.querySelectorAll('.subcat').forEach(s => s.classList.remove('open'));
+  }
+</script>
+</body>
+</html>
